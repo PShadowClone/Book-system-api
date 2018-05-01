@@ -9,7 +9,8 @@ class Request extends Model
 {
     public $table = 'requests';
     public $primaryKey = 'id';
-    public $fillable = ['id', 'client_id', 'driver_id', 'book_id','library_id', 'quarter_id', 'delivery_time', 'status', 'book_amount', 'promo_code', 'request_identifier', 'created_at', 'updated_at', 'longitude', 'latitude'];
+    public $fillable = ['id', 'client_id', 'driver_id', 'book_id','library_id', 'quarter_id', 'delivery_time',
+        'status', 'book_amount', 'promo_code', 'request_identifier', 'created_at', 'updated_at', 'longitude', 'latitude','confirming_date'];
     public $dates = ['created_at', 'updated_at'];
 
 

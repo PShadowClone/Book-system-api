@@ -25,6 +25,11 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/request', 'Request\Controller@store');
     Route::get('/cities/{id?}', 'City\Controller@show');
     Route::get('/quarters/{id?}', 'Quarter\Controller@show');
+    Route::get('/cart', 'Cart\Controller@show');
+    Route::get('/user', 'User\Controller@edit');
+    Route::put('/user', 'User\Controller@update');
+    Route::post('/user/evaluation', 'User\Controller@evaluate');
+    Route::get('/requests/{id?}', 'Request\Controller@show');
 
 });
 

@@ -1,5 +1,5 @@
 <?php
-
+define('COMMON_PAGINATION', 6);
 define('REDIRECT_URL', 'admin.show');
 
 define('ILLEGAL_ACCESS', 'illegal access');
@@ -41,6 +41,13 @@ define('DELIVERING', "6");
 define('DELIVERED', "7");
 define('CANCELED', "8");
 define('REFUSED', "9");
+define('REQUEST_IDENTIFIER_LENGTH', 10);
+
+/**
+ *
+ * Api functions
+ *
+ */
 define('SUCCESS', "success");
 define('ERROR', "error");
 

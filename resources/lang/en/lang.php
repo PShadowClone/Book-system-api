@@ -71,6 +71,43 @@ return [
     'delivery_time_required' => '27',
     'quarter_id_required' => '28',
     'quarter_id_exists' => '29',
+    'longitude_required' => "30",
+    'longitude_numeric' => '31',
+    'latitude_required' => '32',
+    'latitude_numeric' => '33',
+    'amount_is_not_available' => '34',
+    'request_not_found' => '35',
+
+
+    /**
+     *
+     *
+     * Cart's errors
+     *
+     */
+    'cart_show_error' => '36',
+
+    /**
+     *
+     *
+     * User's errors
+     *
+     */
+    'show_profile_error' => '37',
+    'update_error' => '38',
+    'client_id_required' => '39',
+    'client_id_exists' => '40',
+    'driver_id_required' => '41',
+    'driver_id_exists' => '42',
+    'evaluation_required' => '43',
+    'evaluation_between' => '44',
+    'user_evaluation_error' => '45',
+    'evaluation_integer' => '46',
+    'user_evaluated_before' => '47',
+
+
+    'request_store_error' => '48',
+    'nearest_driver_error' => '49',
 
 
 ];

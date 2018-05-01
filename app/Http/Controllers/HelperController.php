@@ -353,6 +353,8 @@ class HelperController extends Controller
     {
         if (is_array($destination)) {
             $destination = self::prepareCoordinations($destination);
+            $destination = rtrim($destination,'&');
+//            dd($destination);
         }
         $url = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=$source&destinations=$destination&key=" . env('GOOGLE_MAP_KEY');
         $ch = curl_init();
@@ -365,9 +367,9 @@ class HelperController extends Controller
         curl_close($ch);
         $response_all = json_decode($response);
         // print_r($response);
-        dd($response);
-        $distance = $response_all->routes[0]->legs[0]->distance->text;
-        return $distance;
+//        dd($response);
+//        $distance = $response_all->routes[0]->legs[0]->distance->text;
+        return $response_all;
     }
 
     static function prepareCoordinations(array $dist)

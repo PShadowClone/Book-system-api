@@ -77,13 +77,13 @@ class User extends Authenticatable
 
     public function client_requests()
     {
-        return $this->hasMany(Request::class, 'id', 'client_id');
+        return $this->hasMany(Request::class, 'client_id', 'id');
 
     }
 
     public function driver_request()
     {
-        return $this->hasMany(Request::class, 'id', 'driver_id');
+        return $this->hasMany(Request::class, 'driver_id', 'id');
 
     }
 }
