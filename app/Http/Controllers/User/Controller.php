@@ -85,7 +85,6 @@ class Controller extends BaseController
             unset($evaluation->client_id); // hide client's id
             return success($evaluation);
         } catch (\Exception $exception) {
-            dd($exception->getMessage());
             return error(trans('lang.user_evaluation_error'));
         }
     }

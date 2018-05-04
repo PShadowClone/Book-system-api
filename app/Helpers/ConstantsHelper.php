@@ -1,5 +1,6 @@
 <?php
 define('COMMON_PAGINATION', 6);
+define('LIMIT_ROWS', 10);
 define('REDIRECT_URL', 'admin.show');
 
 define('ILLEGAL_ACCESS', 'illegal access');
@@ -94,6 +95,7 @@ define('PROMOCODE_LENGTH', 63);
 define('DEFAULT_CATEGORY_BOOKS_NUMBER', 4);
 define('DEFAULT_CATEGORY_PAGINATION_NUMBER', 6);
 define('DEFAULT_BOOK_PAGINATION_NUMBER', 5);
+define('DEFAULT_LIBRARY_PAGINATION_NUMBER', 5);
 
 
 

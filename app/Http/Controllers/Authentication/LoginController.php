@@ -30,12 +30,13 @@ class LoginController extends Controller
         $validator = Validator::make($request->all(), $this->rules(), $this->messages());
         if ($validator->fails())
             return error($validator->errors());
-        if ($user = User::where(['email' => $request->input('username') , 'password' => $request->input('password')])->first()) {
+        if ($user = User::where(['email' => $request->input('username'), 'password' => $request->input('password')])->first()) {
             Auth::login($user);
             $user = Auth::user();
+            $data['token_type'] = "Bearer";
             $data['token'] = $user->createToken(project_name())->accessToken;
             return success($data);
-        } else if ($user = User::where(['phone' => $request->input('username') , 'password' => $request->input('password')])->first()) {
+        } else if ($user = User::where(['phone' => $request->input('username'), 'password' => $request->input('password')])->first()) {
             Auth::login($user);
             $user = Auth::user();
             $data['token'] = $user->createToken(project_name())->accessToken;

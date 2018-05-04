@@ -21,27 +21,30 @@ class Controller extends BaseController
      */
     public function show(Request $request, $id = null)
     {
-
-        if ($id) {
-            $category = Category::where(['id' => $id])->orWhere('name', 'like', '%' . $id . '%')->get();
-            if (!$category) {
-                return error(trans('lang.category_not_found'), 404);
+        try {
+            if ($id) {
+                $category = Category::where(['id' => $id])->orWhere('name', 'like', '%' . $id . '%')->get();
+                if (!$category) {
+                    return error(trans('lang.category_not_found'), 404);
+                }
+                $category = $this->getCategoryById($request, $category, $id);
+                return success($category);
             }
-            $category = $this->getCategoryById($request, $category, $id);
-            return success($category);
-        }
-        $categories = Category::orderBy('id', 'desc')->paginate($request->input('per_page', DEFAULT_CATEGORY_PAGINATION_NUMBER));
-        $data = $categories->map(function ($item) use ($request) {
-            $item['image'] = env('ASSETS_URL') . $item->image;
-            $item['books'] = $item->books()->orderBy('books.id', 'desc')->limit($request->input('book_number', DEFAULT_CATEGORY_BOOKS_NUMBER))->get()->map(function ($item) {
-                $item->image = env('ASSETS_URL') . $item->image;
+            $categories = Category::orderBy('id', 'desc')->paginate($request->input('per_page', DEFAULT_CATEGORY_PAGINATION_NUMBER));
+            $data = $categories->map(function ($item) use ($request) {
+                $item['image'] = env('ASSETS_URL') . $item->image;
+                $item['books'] = $item->books()->orderBy('books.id', 'desc')->limit($request->input('book_number', DEFAULT_CATEGORY_BOOKS_NUMBER))->get()->map(function ($item) {
+                    $item->image = env('ASSETS_URL') . $item->image;
 
+                    return $item;
+                });
                 return $item;
             });
-            return $item;
-        });
 
-        return success($categories);
+            return success($categories);
+        } catch (\Exception $exception) {
+            return error(trans('lang.show_category_error'));
+        }
     }
 
 

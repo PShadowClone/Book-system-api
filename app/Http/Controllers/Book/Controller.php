@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Book;
 
 use App\Book;
+use App\BookEvaluations;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class Controller extends BaseController
 {
@@ -90,6 +93,69 @@ class Controller extends BaseController
             return $item;
         });
         return ['data' => $content, 'status' => SUCCESS];
+    }
+
+    /**
+     *
+     * evaluate books is done by inserting book's evaluation in separated table
+     *
+     * if book has been evaluated before by the same user, evaluation will be rejected
+     *
+     * @param Request $request
+     * @return $this
+     *
+     */
+    public function evaluate(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), $this->rules(), $this->messages());
+        if ($validator->fails())
+            return error($validator->errors());
+        try {
+            $bookEvaluation = BookEvaluations::where(['client_id' => Auth::user()->id, 'book_id' => $request->input('book_id')])->first();
+            if ($bookEvaluation)
+                return error(trans('lang.evaluated_before'));
+            $request['client_id'] = Auth::user()->id;
+            $evaluation = BookEvaluations::create($request->all());
+            unset($request['client_id']); // hide user's id
+            return success($evaluation);
+        } catch (\Exception $exception) {
+            return error(trans('lang.book_evaluation_error'));
+        }
+    }
+
+
+    /**
+     *
+     * evaluation validation's rules
+     *
+     *
+     * @return array
+     */
+    private function rules()
+    {
+        return [
+            'book_id' => 'required|exists:books,id',
+            'evaluate' => 'required|integer|between:0,5'
+        ];
+    }
+
+    /**
+     *
+     * evaluation validation's messages
+     *
+     *
+     * @return array
+     */
+    private function messages()
+    {
+        return [
+            'book_id.required' => trans('lang.book_id_required'),
+            'book_id.exists' => trans('lang.book_id_exists'),
+            'evaluate.required' => trans('lang.evaluation_required'),
+            'evaluate.integer' => trans('lang.evaluation_integer'),
+            'evaluate.between' => trans('lang.evaluation_between'),
+        ];
     }
 
     /**

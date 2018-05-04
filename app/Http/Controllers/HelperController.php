@@ -13,6 +13,7 @@ use App\Notification;
 use App\Quarter;
 use App\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
@@ -319,7 +320,7 @@ class HelperController extends Controller
         $response['resultNum'] = $result_number;
         if (is_object($data))
             $response['resultNum'] = count($data);
-        else if(is_array($data))
+        else if (is_array($data))
             $response['resultNum'] = sizeof($data);
         $response['resultMessage'] = $status;
         return response()->json($response, $status)->header('Content-type:application/json', true);
@@ -349,11 +350,54 @@ class HelperController extends Controller
         return response()->json($response, $status)->header('Content-type:application/json', true);
     }
 
+
+    /**
+     *
+     * ************************************
+     *          GET DISTANCE
+     * ************************************
+     *
+     * this function get the distance between four point (source ,and destination)
+     *
+     *
+     * @param $source_lat
+     * @param $source_long
+     * @param $des_lat
+     * @param $des_long
+     * @return float|int
+     */
+    static function distance($source_lat, $source_long, $des_lat, $des_long)
+    {
+        return (3959 * acos(cos(deg2rad($source_lat)) * cos(deg2rad($des_lat)) *
+                cos(deg2rad($des_long) - deg2rad($source_long)) + sin(deg2rad($source_lat)) * sin(deg2rad($des_lat))));
+    }
+
+    /**
+     *
+     * ************************************
+     *          GET DISTANCE
+     * ************************************
+     *
+     * this function get the nearest distances in the given table in addition to get
+     * specific number of records
+     *
+     * @param $latitude
+     * @param $longitude
+     * @param $table
+     * @param int $limit
+     * @return mixed
+     */
+    static function nearestDistances($latitude, $longitude, $table, $limit = LIMIT_ROWS)
+    {
+        return DB::select(DB::raw('SELECT *, ( 3959 * acos( cos( radians(' . $latitude . ') ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(' . $longitude . ') ) + sin( radians(' . $latitude . ') ) * sin( radians(latitude) ) ) ) AS distance FROM ' . $table . ' ORDER BY distance asc limit ' . $limit));
+
+    }
+
     static function getDistance($source = LOCATION_LAT . "," . LOCATION_LONG, $destination = LOCATION_LAT . "," . LOCATION_LONG)
     {
         if (is_array($destination)) {
             $destination = self::prepareCoordinations($destination);
-            $destination = rtrim($destination,'&');
+            $destination = rtrim($destination, '&');
 //            dd($destination);
         }
         $url = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=$source&destinations=$destination&key=" . env('GOOGLE_MAP_KEY');

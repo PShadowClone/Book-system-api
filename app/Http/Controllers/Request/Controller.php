@@ -97,7 +97,7 @@ class Controller extends BaseController
             });
             return success($requests);
         } catch (\Exception $exception) {
-            return error($exception);
+            return error(trans('lang.request_show_error'));
         }
     }
 
@@ -106,7 +106,7 @@ class Controller extends BaseController
      *
      * get nearest driver to assign request to him
      *
-     *
+     * turn
      * @param $latitude
      * @param $longitude
      * @return null

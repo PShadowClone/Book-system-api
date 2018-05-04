@@ -43,6 +43,18 @@ class Library extends Model
     }
 
     /**
+     *
+     * get library's offer
+     *
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function offer()
+    {
+        return $this->hasOne(Offer::class, 'library_id', 'id');
+    }
+
+    /**
      * returns all libraries according to city
      * @param $id
      * @return \Illuminate\Database\Eloquent\Collection

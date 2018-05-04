@@ -31,6 +31,12 @@ class Book extends Model
 
     }
 
+    public function book_evaluations()
+    {
+        return $this->hasMany(BookEvaluations::class, 'book_id', 'id');
+
+    }
+
 
     /**
      * get list of books according to category's info

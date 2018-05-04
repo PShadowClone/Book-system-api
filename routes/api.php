@@ -30,6 +30,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::put('/user', 'User\Controller@update');
     Route::post('/user/evaluation', 'User\Controller@evaluate');
     Route::get('/requests/{id?}', 'Request\Controller@show');
+    Route::post('/book/evaluation', 'Book\Controller@evaluate');
 
 });
 

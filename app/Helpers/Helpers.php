@@ -154,3 +154,18 @@ if (!function_exists('getDistance')) {
     }
 }
 
+if (!function_exists('distance')) {
+    function distance($source_lat, $source_long, $des_lat, $des_long)
+    {
+        return \App\Http\Controllers\HelperController::distance($source_lat, $source_long, $des_lat, $des_long);
+    }
+}
+
+if (!function_exists('nearestDistances')) {
+    function nearestDistances($latitude, $longitude, $table, $limit = LIMIT_ROWS)
+    {
+        return \App\Http\Controllers\HelperController::nearestDistances($latitude, $longitude, $table, $limit);
+    }
+}
+
+

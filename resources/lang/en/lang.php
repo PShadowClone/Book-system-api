@@ -36,13 +36,6 @@ return [
 
     /**
      *
-     * Category's errors
-     *
-     */
-    'category_not_found' => "18",
-
-    /**
-     *
      * Book's errors
      *
      */
@@ -104,10 +97,48 @@ return [
     'user_evaluation_error' => '45',
     'evaluation_integer' => '46',
     'user_evaluated_before' => '47',
-
-
     'request_store_error' => '48',
     'nearest_driver_error' => '49',
+    'book_evaluation_error' => '50',
+    'evaluated_before' => '51',
+    'library_not_found' => '52',
+
+
+    /**
+     *
+     *
+     * Advertisement's error
+     *
+     */
+    'ads_is_not_found' => '53',
+    'ads_show_error' => '54',
+
+    /**
+     *
+     *
+     *  Library's error
+     *
+     *
+     */
+    'show_library_error' => '55',
+
+    /**
+     *
+     * Category's errors
+     *
+     */
+    'category_not_found' => "18",
+    'show_category_error' => "56",
+
+    /**
+     *
+     * Quarter's errors
+     *
+     */
+    'quarter_show_error' => '57',
+
+
+    'request_show_error' => '58'
 
 
 ];

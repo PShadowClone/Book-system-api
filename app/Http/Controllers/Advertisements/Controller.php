@@ -21,22 +21,28 @@ class Controller extends BaseController
      */
     public function show(Request $request, $ads_id = null)
     {
-        $advertisements = Advertisement::whereDate('start_publish', '<=', Carbon::now())
-            ->whereDate('end_publish', '>=', Carbon::now())->orderBy('arrange', 'asc');
-        if ($ads_id) {
-            $advertisements = $advertisements->where(['id' => $ads_id])->first();
-            if ($advertisements->image) {
-                $advertisements['image'] = URL::to('/') . $advertisements->image;
-            }
-        } else {
-            $advertisements = $advertisements->get()->map(function ($item) {
-                if ($item->image) {
-                    $item['image'] = URL::to('/') . $item->image;
+        try {
+            $advertisements = Advertisement::whereDate('start_publish', '<=', Carbon::now())
+                ->whereDate('end_publish', '>=', Carbon::now())->orderBy('arrange', 'asc');
+            if ($ads_id) {
+                $advertisements = $advertisements->where(['id' => $ads_id])->first();
+                if (!$advertisements)
+                    return error(trans('lang.ads_is_not_found'));
+                if ($advertisements->image) {
+                    $advertisements['image'] = URL::to('/') . $advertisements->image;
                 }
-                return $item;
-            });
+            } else {
+                $advertisements = $advertisements->get()->map(function ($item) {
+                    if ($item->image) {
+                        $item['image'] = URL::to('/') . $item->image;
+                    }
+                    return $item;
+                });
+            }
+            return success($advertisements, 200, $advertisements instanceof Advertisement ? 1 : $advertisements->count());
+        } catch (\Exception $exception) {
+            return error(trans('lang.ads_show_error'));
         }
-        return success($advertisements, 200, $advertisements instanceof Advertisement? 1 : $advertisements->count());
     }
 
 
