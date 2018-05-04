@@ -16,35 +16,30 @@ use Illuminate\Support\Facades\Validator;
 
 class Controller extends BaseController
 {
+    /**
+     *
+     * store request with all conditions
+     * @NULL type  means request has not sent to library for confirming yet.
+     *
+     * @param Request $request
+     * @return $this
+     */
     public function store(Request $request)
     {
-        try {
-            $validations = Validator::make($request->all(), $this->rules(), $this->messages());
-            if ($validations->fails()) {
-                return error($validations->errors());
-            }
-            $amountCheck = Book::where('amount', '>', $request->input('book_amount'))->where(['id' => $request->input('book_id')])->first();
-            if (!$amountCheck) {
-                return error(trans('lang.amount_is_not_available'));
-            }
-            $promo_code = PromoCodes::find($request->input('promo_code'));
-            if ($promo_code) {
-                $request['promo_code'] = $promo_code->id;
-            } else {
-                $request['promo_code'] = null;
-            }
 
-            try {
-                $driver = $this->getNearestDriver($request->input('latitude'), $request->input('longitude'));
-            } catch (\Exception $exception) {
-                return error($exception->getMessage());
-            }
-            $request['status'] = FOR_CONFIRMING;
-            $request['client_id'] = Auth::user()->id;
-            $request['driver_id'] = $driver->id;
+        $validations = Validator::make($request->all(), $this->rules(), $this->messages());
+        if ($validations->fails()) {
+            return error($validations->errors());
+        }
+        try {
+
+            $book = Book::find($request->input('book_id'));
+            $request['library_id'] = $book->library_id;
+            $request['status'] = $request->input('type') == REQUEST_DONE ? FOR_CONFIRMING : NOT_SENT_TO_CONFIRMED; // set status of request FOR_CONFIRMING means it's need to be confirmed from library
+            $request['client_id'] = Auth::user()->id; // set client id
             $request['request_identifier'] = str_random(REQUEST_IDENTIFIER_LENGTH);
             $bookRequest = BookRequest::create($request->all());
-            $cart = Cart::create([
+            Cart::create([
                 'client_id' => Auth::user()->id,
                 'request_id' => $bookRequest->id,
                 'book_id' => $request->input('book_id'),
@@ -56,6 +51,7 @@ class Controller extends BaseController
         } catch (\Exception $exception) {
             return error(trans('lang.request_store_error'));
         }
+
     }
 
 
@@ -68,7 +64,8 @@ class Controller extends BaseController
      * @param null $id
      * @return $this
      */
-    public function show(Request $request, $id = null)
+    public
+    function show(Request $request, $id = null)
     {
         try {
             if ($id) {
@@ -112,7 +109,8 @@ class Controller extends BaseController
      * @return null
      * @throws \Exception
      */
-    private function getNearestDriver($latitude, $longitude)
+    private
+    function getNearestDriver($latitude, $longitude)
     {
 
         $results = DB::select(DB::raw('SELECT id,latitude ,longitude , ( 3959 * acos( cos( radians(' . $latitude . ') ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(' . $longitude . ') ) + sin( radians(' . $latitude . ') ) * sin( radians(latitude) ) ) ) AS distance FROM users where type = ' . DRIVER . ' ORDER BY distance asc'));
@@ -133,16 +131,14 @@ class Controller extends BaseController
      *
      * @return array
      */
-    private function rules()
+    private
+    function rules()
     {
         return [
             'book_id' => 'required|exists:books,id',
             'book_amount' => 'required|numeric',
-            'delivery_time' => 'required',
-            'quarter_id' => 'required|exists:quarters,id',
-            'longitude' => 'required|numeric',
-            'latitude' => 'required|numeric',
         ];
+
     }
 
     /**
@@ -152,21 +148,14 @@ class Controller extends BaseController
      *
      * @return array
      */
-    private function messages()
+    private
+    function messages()
     {
         return [
             'book_id.required' => trans('lang.book_id_required'),
             'book_id.exists' => trans('lang.book_id_exists'),
             'book_amount.required' => trans('lang.amount_required'),
-            'book_amount.numeric' => trans('lang.amount_numeric'),
-            'delivery_time.required' => trans('lang.delivery_time_required'),
-            'quarter_id.required' => trans('lang.quarter_id_required'),
-            'quarter_id.exists' => trans('lang.quarter_id_exists'),
-
-            'longitude.required' => trans('lang.longitude_required'),
-            'longitude.numeric' => trans('lang.longitude_numeric'),
-            'latitude.required' => trans('lang.latitude_required'),
-            'latitude.numeric' => trans('lang.latitude_numeric'),
+            'book_amount.numeric' => trans('lang.amount_numeric')
         ];
     }
 }

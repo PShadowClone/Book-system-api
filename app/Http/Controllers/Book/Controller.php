@@ -27,9 +27,10 @@ class Controller extends BaseController
             $filter = $this->filterConditions()[$request->input('filter', 1)];
 
             if ($id) {
-                $book = Book::find($id);
+                $book = Book::with(['library'])->find($id);
                 if (!$book)
                     return error(trans('lang.book_not_found'), NOT_FOUND);
+
                 $book['image'] = env('ASSETS_URL') . $book->image;
                 $book['evaluations'] = $book->evaluations()->avg('user_evaluations.evaluate');
                 return success($book);

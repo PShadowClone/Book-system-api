@@ -43,6 +43,9 @@ define('DELIVERED', "7");
 define('CANCELED', "8");
 define('REFUSED', "9");
 define('REQUEST_IDENTIFIER_LENGTH', 10);
+define('ADD_THEN_CONTINUE', 2);
+define('REQUEST_DONE', 1);
+define('NOT_SENT_TO_CONFIRMED', NULL);
 
 /**
  *
