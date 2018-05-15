@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Book;
 
 use App\Book;
 use App\BookEvaluations;
+use App\Category;
+use App\Library;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use  Maatwebsite\Excel\Facades\Excel;
 
 class Controller extends BaseController
 {
@@ -23,7 +27,10 @@ class Controller extends BaseController
      */
     public function show(Request $request, $id = null)
     {
+
         try {
+
+
             $filter = $this->filterConditions()[$request->input('filter', 1)];
 
             if ($id) {
@@ -39,7 +46,14 @@ class Controller extends BaseController
                 $result = $this->showSearchedBooks($request);
                 return $result['status']($result['data']);
             }
-            $books = Book::orderBy($filter[0], $filter[1])->paginate($request->input('per_page', DEFAULT_BOOK_PAGINATION_NUMBER));
+            $books = Book::orderBy($filter[0], $filter[1]);
+            if ($request->input('provider') == 'LIBRARY') {
+                $library = Library::where('id', '=', Auth::user()->id)->first();
+                if ($library)
+                    $books = $books->where('library_id', '=', $library->id);
+            }
+
+            $books = $books->paginate($request->input('per_page', DEFAULT_BOOK_PAGINATION_NUMBER));
             $books->map(function ($item) {
                 $item['image'] = env('ASSETS_URL') . $item->image;
                 $item['evaluations'] = $item->evaluations()->avg('user_evaluations.evaluate');
@@ -48,6 +62,72 @@ class Controller extends BaseController
             return success($books);
         } catch (\Exception $exception) {
             return error(trans('lang.book_show_error'));
+        }
+    }
+
+
+    /**
+     *
+     * store a collection of books by uploading excel files which has
+     * all information about new books
+     *
+     * insertion done by EXCEL file
+     *
+     * @param Request $request
+     * @return $this
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'books' => 'required|mimes:csv,xlsx,xls',
+        ]);
+
+        if ($validator->fails()) {
+            return error(trans($validator->errors()));
+        }
+        $path = $request->file('books')->getRealPath();
+        try {
+            $data = Excel::load($path, function ($reader) {
+            })->get();
+            if (!empty($data) && $data->count()) {
+                foreach ($data->toArray() as $key => $value) {
+                    if (!empty($value)) {
+                        foreach ($value as $v) {
+                            $inserts[] = ['publisher' => $v['publisher'],
+                                'name' => $v['name'],
+                                'arrange' => $v['arrange'],
+                                'amount' => $v['amount'],
+                                'writer' => $v['writer'],
+                                'publish_date' => $v['publish_date'],
+                                'description' => $v['description'],
+                                'price' => $v['price'],
+                                'category' => $v['category'],
+                                'library' => $v['library'],
+                                'inquisitor' => $v['inquisitor']
+                            ];
+                        }
+                    }
+                }
+                foreach ($inserts as $book) {
+                    $category = Category::where(['name' => $book['category']])->first();
+                    if (!$category) {
+                        return error(trans('lang.category_not_found'));
+                    }
+                    $library = Library::where(['name' => $book['library']])->first();
+                    if (!$library) {
+                        return error(trans('lang.library_not_found'));
+                    }
+                    $newBook = new Book();
+                    $newBook->fill($book);
+                    $newBook->category_id = $category->id;
+                    $newBook->library_id = $library->id;
+                    $newBook->save();
+                }
+            }
+
+            return success(trans('lang.book_stored_successfully'));
+        } catch (\Exception $exception) {
+            return error(trans('lang.book_store_error'));
         }
     }
 
@@ -122,6 +202,17 @@ class Controller extends BaseController
             return success($evaluation);
         } catch (\Exception $exception) {
             return error(trans('lang.book_evaluation_error'));
+        }
+    }
+
+
+    public function showEvaluations(Request $request, $id = null)
+    {
+        try {
+            $bookEvaluations = BookEvaluations::where(['book_id' => $id])->get();
+            return success($bookEvaluations);
+        } catch (\Exception $exception) {
+            return error(trans('lang.book_evaluations_show_error'));
         }
     }
 

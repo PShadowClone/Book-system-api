@@ -4,14 +4,21 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Passport\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+//use Illuminate\Contracts\Auth\Authenticatable;
 
-class Library extends Model
+class Library extends Authenticatable
 {
+    use Notifiable, HasApiTokens;
+
     public $table = 'libraries';
     public $primaryKey = 'id';
     public $fillable = ['id', 'name', 'status', 'phone', 'mobile', 'password', 'email', 'address', 'instProfitRate', 'longitude', 'latitude', 'quarter_id', 'token'];
     public $hidden = ['password'];
     public $dates = ['created_at', 'updated_at', 'deleted_at'];
+    public $guarded = ['library'];
 
 
     /**
@@ -91,4 +98,7 @@ class Library extends Model
         $libraries->select(['Libraries.*']);
         return $libraries;
     }
+
+
+
 }

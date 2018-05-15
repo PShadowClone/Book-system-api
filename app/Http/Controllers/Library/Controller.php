@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Library;
 
 use App\Http\Controllers\HelperController;
 use App\Library;
+use App\LibraryPayment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
@@ -53,4 +54,58 @@ class Controller extends BaseController
         }
 
     }
+
+    /**
+     *
+     * get sales detail for authenticated library
+     *
+     *
+     * @param Request $request
+     * @return $this
+     */
+    public function sales(Request $request)
+    {
+        if (!$request->input('provider') || $request->input('provider') != 'LIBRARY') {
+            return error(trans('lang.not_authorized_access'));
+        }
+        $library = Library::find(Auth::user()->id);
+        if (!$library)
+            return error(trans('lang.library_not_found'));
+        $data['total_sales'] = LibraryPayment::libraryPayments($library->id);
+        $data['inst_profits'] = $this->calculateInstitutionProfits($library->instProfitRate, $library->total_profits);
+        $data['resetPayment'] = $data['inst_profits'] - $data['total_sales'];
+        $data['pureProfits'] = $library->total_profits - LibraryPayment::libraryPayments($library->id);
+        return success($data);
+    }
+
+    /**
+     *
+     * calculate institution profits form the each library's rate
+     *
+     * @param $rate
+     * @param $total
+     * @return float|int
+     */
+    private function calculateInstitutionProfits($rate, $total)
+    {
+        return ($rate * $total) / 100;
+    }
+
+
+    public function salesDetails(Request $request)
+    {
+        if (!$request->input('provider') || $request->input('provider') != 'LIBRARY') {
+            return error(trans('lang.not_authorized_access'));
+        }
+        $library = Library::find(Auth::user()->id);
+        if (!$library)
+            return error(trans('lang.library_not_found'));
+        try {
+            $libraryPaymentsDetails = LibraryPayment::where(['library_id' => $library->id])->get();
+            return success($libraryPaymentsDetails);
+        } catch (\Exception $exception) {
+            return error(trans('lang.show_payments_details_error'));
+        }
+    }
+
 }

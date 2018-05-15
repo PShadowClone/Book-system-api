@@ -393,6 +393,30 @@ class HelperController extends Controller
 
     }
 
+
+    /**
+     *
+     * ************************************
+     *       GET DELIVERY DISCOUNT
+     * ************************************
+     *
+     * this function returns the value of discount for each delivering according to
+     * library's area (quarter)
+     *
+     * @default value for $status is OUT_CITY = 2
+     *
+     * @param int $status
+     * @return mixed
+     */
+    static function delivery_price($status = OUT_CITY)
+    {
+        if ($status == IN_CITY)
+            return Setting::first()->in_city;
+        else
+            return Setting::first()->out_city;
+    }
+
+
     static function getDistance($source = LOCATION_LAT . "," . LOCATION_LONG, $destination = LOCATION_LAT . "," . LOCATION_LONG)
     {
         if (is_array($destination)) {

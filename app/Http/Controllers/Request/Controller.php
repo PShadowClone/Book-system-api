@@ -10,6 +10,7 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as BaseController;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -19,6 +20,7 @@ class Controller extends BaseController
     /**
      *
      * store request with all conditions
+     *
      * @NULL type  means request has not sent to library for confirming yet.
      *
      * @param Request $request
@@ -27,7 +29,7 @@ class Controller extends BaseController
     public function store(Request $request)
     {
 
-        $validations = Validator::make($request->all(), $this->rules(), $this->messages());
+        $validations = Validator::make($request->all(), $this->rules($request->input('type')), $this->messages($request->input('type')));
         if ($validations->fails()) {
             return error($validations->errors());
         }
@@ -54,6 +56,32 @@ class Controller extends BaseController
 
     }
 
+    /**
+     * change request's status to be FOR_CONFIRMING
+     *
+     * library should confirm if library has books or not
+     *
+     *
+     * @param Request $request
+     * @return $this
+     */
+    public function confirming(Request $request)
+    {
+        $client_id = Auth::user()->id;
+        $where = [];
+        $where['client_id'] = $client_id;
+        if ($request_id = $request->input('request_id'))
+            $where['request_id'] = $request_id;
+        Cart::with(['request'])->where($where)->get()->map(function ($item) {
+            if ($item->request->status == NULL || $item->request->status == FOR_CONFIRMING) {
+                $item->request->status = FOR_CONFIRMING;
+                $item->request->update();
+            }
+            return $item;
+        });
+        return success(trans('lang.confirming_request_sent_for_libraries'));
+    }
+
 
     /**
      *
@@ -64,8 +92,7 @@ class Controller extends BaseController
      * @param null $id
      * @return $this
      */
-    public
-    function show(Request $request, $id = null)
+    public function show(Request $request, $id = null)
     {
         try {
             if ($id) {
@@ -78,7 +105,6 @@ class Controller extends BaseController
 
                 return success($bookRequest);
             }
-
             if (Auth::user()->type == CLIENT) {
                 $requests = Auth::user()->client_requests()->orderBy('id', 'desc')->paginate($request->input('per_page', COMMON_PAGINATION));
                 $requests->map(function ($item) {
@@ -109,8 +135,7 @@ class Controller extends BaseController
      * @return null
      * @throws \Exception
      */
-    private
-    function getNearestDriver($latitude, $longitude)
+    private function getNearestDriver($latitude, $longitude)
     {
 
         $results = DB::select(DB::raw('SELECT id,latitude ,longitude , ( 3959 * acos( cos( radians(' . $latitude . ') ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(' . $longitude . ') ) + sin( radians(' . $latitude . ') ) * sin( radians(latitude) ) ) ) AS distance FROM users where type = ' . DRIVER . ' ORDER BY distance asc'));
@@ -125,19 +150,25 @@ class Controller extends BaseController
     }
 
     /**
-     *
      * validation rules
      *
      *
+     * @param string $request_status
      * @return array
      */
-    private
-    function rules()
+    private function rules($request_status = FOR_CONFIRMING)
     {
-        return [
+        $rules = [
             'book_id' => 'required|exists:books,id',
             'book_amount' => 'required|numeric',
         ];
+        if ($request_status != NOT_SENT_TO_CONFIRMED) {
+            $rules['longitude'] = 'required|numeric';
+            $rules['latitude'] = 'required|numeric';
+            $rules['quarter_id'] = 'required|exists:quarters,id';
+        }
+
+        return $rules;
 
     }
 
@@ -148,14 +179,20 @@ class Controller extends BaseController
      *
      * @return array
      */
-    private
-    function messages()
+    private function messages()
     {
         return [
             'book_id.required' => trans('lang.book_id_required'),
             'book_id.exists' => trans('lang.book_id_exists'),
             'book_amount.required' => trans('lang.amount_required'),
-            'book_amount.numeric' => trans('lang.amount_numeric')
+            'book_amount.numeric' => trans('lang.amount_numeric'),
+            'longitude.required' => trans('lang.longitude_required'),
+            'longitude.numeric' => trans('lang.longitude_numeric'),
+            'latitude.required' => trans('lang.latitude_required'),
+            'latitude.numeric' => trans('lang.latitude_numeric'),
+            'quarter_id.required' => trans('lang.quarter_id_required'),
+            'quarter_id.numeric' => trans('lang.quarter_id_numeric'),
+            'quarter_id.exists' => trans('lang.quarter_id_exists'),
         ];
     }
 }

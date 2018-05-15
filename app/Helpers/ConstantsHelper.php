@@ -70,6 +70,8 @@ define('INCORRECT_EXPIRE_DATE', 'incorrect expire date');
 define('INCORRECT_EXPIRE_DATE_CODE', 1010);
 define('ALL_LIBRARY_BOOKS', "1");
 define('NOT_ALL_LIBRARY_BOOKS', "2");
+define('BOOK_OFFER', "1");
+define('BUY_OFFER', "2");
 
 
 /**
@@ -99,6 +101,15 @@ define('DEFAULT_CATEGORY_BOOKS_NUMBER', 4);
 define('DEFAULT_CATEGORY_PAGINATION_NUMBER', 6);
 define('DEFAULT_BOOK_PAGINATION_NUMBER', 5);
 define('DEFAULT_LIBRARY_PAGINATION_NUMBER', 5);
+
+
+/**
+ *
+ * delivery constants
+ *
+ */
+define('IN_CITY', TRUE);
+define('OUT_CITY', FALSE);
 
 
 

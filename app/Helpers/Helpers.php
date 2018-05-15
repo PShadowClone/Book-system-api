@@ -167,5 +167,11 @@ if (!function_exists('nearestDistances')) {
         return \App\Http\Controllers\HelperController::nearestDistances($latitude, $longitude, $table, $limit);
     }
 }
+if (!function_exists('delivery_price')) {
+    function delivery_price($status = OUT_CITY)
+    {
+        return \App\Http\Controllers\HelperController::delivery_price($status);
+    }
+}
 
 

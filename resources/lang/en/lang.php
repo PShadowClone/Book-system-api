@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'confirming_request_sent_for_libraries' => 'تم ارسال الطلبات للمكتبة لتأكيد ',
+    'book_stored_successfully' => 'تم حفظ الكتب بنجاح',
+    'not_authorized_access' => '401',
     'name_required' => "1",
     'name_string' => '2',
     'name_max' => "3",
@@ -137,8 +140,10 @@ return [
      */
     'quarter_show_error' => '57',
 
-
-    'request_show_error' => '58'
+    'request_show_error' => '58',
+    'book_store_error' => '59',
+    'book_evaluations_show_error' => '60',
+    'show_payments_details_error' => '61'
 
 
 ];

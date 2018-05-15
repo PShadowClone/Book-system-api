@@ -10,8 +10,8 @@ class LibraryPayment extends Model
     use SoftDeletes;
     public $table = 'library_payed';
     public $primaryKey = 'id';
-    public $fillable = ['id','money','library_id' , 'type'];
-    public $dates = ['created_at' , 'updated_at' , 'deleted_at'];
+    public $fillable = ['id', 'money', 'library_id', 'type'];
+    public $dates = ['created_at', 'updated_at', 'deleted_at'];
 
 
     /**
@@ -26,8 +26,9 @@ class LibraryPayment extends Model
      * @return string
      * @throws \Exception
      */
-    public function setType($type = '1'){
-        if($type != '1' && $type != '3')
+    public function setType($type = '1')
+    {
+        if ($type != '1' && $type != '3')
             throw new \Exception('unsupported types');
         return $type;
     }
@@ -37,11 +38,13 @@ class LibraryPayment extends Model
      * @param null $library_id
      * @return mixed
      */
-     static function libraryPayments($library_id = null){
-        return LibraryPayment::where(['library_id' => $library_id , 'deleted_at' => null])->sum('money');
+    static function libraryPayments($library_id = null)
+    {
+        return LibraryPayment::where(['library_id' => $library_id, 'deleted_at' => null])->sum('money');
     }
 
-    public function library(){
-         return $this->belongsTo(Library::class, 'library_id' , 'id');
+    public function library()
+    {
+        return $this->belongsTo(Library::class, 'library_id', 'id');
     }
 }

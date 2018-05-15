@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Authentication;
 
+use App\Library;
 use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
 class LoginController extends Controller
@@ -31,15 +33,37 @@ class LoginController extends Controller
         if ($validator->fails())
             return error($validator->errors());
         if ($user = User::where(['email' => $request->input('username'), 'password' => $request->input('password')])->first()) {
+            $user['guard'] = 'client';
             Auth::login($user);
             $user = Auth::user();
             $data['token_type'] = "Bearer";
             $data['token'] = $user->createToken(project_name())->accessToken;
+            $data['guard'] = 'client';
             return success($data);
         } else if ($user = User::where(['phone' => $request->input('username'), 'password' => $request->input('password')])->first()) {
+            $user['guard'] = 'client';
+
+            $data['token_type'] = "Bearer";
             Auth::login($user);
             $user = Auth::user();
             $data['token'] = $user->createToken(project_name())->accessToken;
+            $data['guard'] = 'client';
+            return success($data);
+        } else if ($user = Library::where(['phone' => $request->input('username'), 'password' => $request->input('password')])->first()) {
+            $user['guard'] = 'library';
+            $data['token_type'] = "Bearer";
+            Auth::login($user);
+            $user = Auth::user();
+            $data['token'] = $user->createToken(project_name())->accessToken;
+            $data['guard'] = 'library';
+            return success($data);
+        } else if ($library = Library::where(['email' => $request->input('username'), 'password' => $request->input('password')])->first()) {
+            $library['guard'] = 'library';
+            $data['token_type'] = "Bearer";
+            Auth::login($library);
+            $library = Auth::user();
+            $data['token'] = $library->createToken(project_name())->accessToken;
+            $data['guard'] = 'library';
             return success($data);
         }
         return error(trans('lang.username_password_wrong'));

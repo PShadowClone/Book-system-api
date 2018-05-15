@@ -52,4 +52,8 @@ class Offer extends Model
     {
         return $this->hasMany(BookOffer::class, 'offer_id', 'id');
     }
+
+    public function libraryDeliveryOffer()
+    {
+    }
 }

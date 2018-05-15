@@ -9,8 +9,8 @@ class Request extends Model
 {
     public $table = 'requests';
     public $primaryKey = 'id';
-    public $fillable = ['id', 'client_id', 'driver_id', 'book_id','library_id', 'quarter_id', 'delivery_time',
-        'status', 'book_amount', 'promo_code', 'request_identifier', 'created_at', 'updated_at', 'longitude', 'latitude','confirming_date'];
+    public $fillable = ['id', 'client_id', 'driver_id', 'book_id', 'library_id', 'quarter_id', 'delivery_time',
+        'status', 'book_amount', 'promo_code', 'request_identifier', 'created_at', 'updated_at', 'longitude', 'latitude', 'confirming_date'];
     public $dates = ['created_at', 'updated_at'];
 
 
@@ -34,13 +34,23 @@ class Request extends Model
         return $this->belongsTo(Quarter::class, 'quarter_id', 'id');
     }
 
+    public function library()
+    {
+        return $this->belongsTo(Library::class, 'library_id', 'id');
+    }
+
+    public function promo_code()
+    {
+        return PromoCodes::where(['code' => $this->promo_code])->first();
+    }
+
     /**
      *
      *  get request according to requests' client's info
      * @param $client_info
      * @return mixed
      */
-    public static function byClient($client_info , $id = null)
+    public static function byClient($client_info, $id = null)
     {
         $requests = Request::
         join('users', 'users.id', '=', 'requests.client_id')
@@ -83,7 +93,7 @@ class Request extends Model
             ->join('drivers', 'drivers.id', '=', 'requests.driver_id')
             ->join('clients', 'clients.id', '=', 'requests.client_id')
             ->join('libraries', 'libraries.id', '=', 'books.library_id')
-            ->where('libraries.id' , '=' , $id);
+            ->where('libraries.id', '=', $id);
 //        if ($id)
 //            $userRequests = $userRequests->where(['libraries.id' => $id]);
         if ($request_status && $request_status != '-1')

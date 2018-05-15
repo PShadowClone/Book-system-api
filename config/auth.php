@@ -45,6 +45,10 @@ return [
             'driver' => 'passport',
             'provider' => 'users',
         ],
+        'library-api' => [
+            'driver' => 'passport',
+            'provider' => 'libraries',
+        ]
     ],
 
     /*
@@ -69,6 +73,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\User::class,
         ],
+        'libraries' => [
+            'driver' => 'eloquent',
+            'model' => App\Library::class,
+        ]
 
         // 'users' => [
         //     'driver' => 'database',
@@ -94,6 +102,11 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
+            'table' => 'password_resets',
+            'expire' => 60,
+        ],
+        'libraries' => [
+            'provider' => 'libraries',
             'table' => 'password_resets',
             'expire' => 60,
         ],
