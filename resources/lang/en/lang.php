@@ -3,6 +3,8 @@
 return [
     'confirming_request_sent_for_libraries' => 'تم ارسال الطلبات للمكتبة لتأكيد ',
     'book_stored_successfully' => 'تم حفظ الكتب بنجاح',
+    'request_status_successfully_updated' => 'تم تحديث حالة الطلب بنجاح',
+
     'not_authorized_access' => '401',
     'name_required' => "1",
     'name_string' => '2',
@@ -143,7 +145,15 @@ return [
     'request_show_error' => '58',
     'book_store_error' => '59',
     'book_evaluations_show_error' => '60',
-    'show_payments_details_error' => '61'
+    'show_payments_details_error' => '61',
+
+    'show_confirming_requests_error' => '62',
+    'status_required' => '63',
+    'status_in' => '64',
+    'request_status_changed_error' => '65',
+    'show_offers_error' => '66',
+    'show_driver_requests' => '67',
+    'show_driver_profit_details' => '68'
 
 
 ];

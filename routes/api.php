@@ -24,6 +24,8 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::get('/libraries/sales', 'Library\Controller@sales');
     Route::get('/libraries/sales/details', 'Library\Controller@salesDetails');
+    Route::get('/libraries/requests', 'Library\Controller@requests');
+    Route::match(['put', 'post'], '/libraries/update/status/{request_id?}', 'Library\Controller@updateRequestStatus');
 
     Route::get('/categories/{category_id?}', 'Category\Controller@show');
     Route::get('/books/{book_id?}', 'Book\Controller@show');
@@ -39,6 +41,10 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/book/evaluation', 'Book\Controller@evaluate');
     Route::get('/book/evaluation/{id?}', 'Book\Controller@showEvaluations');
     Route::get('/request/confirming', 'Request\Controller@confirming');
+    Route::get('/offers/{id?}', 'Offer\Controller@show');
+    Route::get('/driver/requests/{request_id?}', 'Driver\Controller@requests');
+    Route::get('/driver/sales', 'Driver\Controller@sales');
+    Route::get('/driver/sales/details', 'Driver\Controller@saleDetails');
 
 });
 
