@@ -4,6 +4,8 @@ return [
     'confirming_request_sent_for_libraries' => 'تم ارسال الطلبات للمكتبة لتأكيد ',
     'book_stored_successfully' => 'تم حفظ الكتب بنجاح',
     'request_status_successfully_updated' => 'تم تحديث حالة الطلب بنجاح',
+    'delivery_order' => 'عرض توصيل جديد',
+    'new_delivery_order' => 'هناك عرض توصيل جديد قريب منك',
 
     'not_authorized_access' => '401',
     'name_required' => "1",
@@ -153,7 +155,17 @@ return [
     'request_status_changed_error' => '65',
     'show_offers_error' => '66',
     'show_driver_requests' => '67',
-    'show_driver_profit_details' => '68'
+    'show_driver_profit_details' => '68',
+    'token_required' => '69',
+    'token_updated_error' => '70',
+    'request_not_confirmed_yet' => '71',
+    'sales_exceed_the_delay_time' => '72',
+    'sale_error' => '73',
+    'image_uploaded_empty' => '74',
+    'image_uploaded_error' => '75',
+    'image_required' => '76',
+    'request_id_required' => '77',
+    'request_id_exists' => '78'
 
 
 ];

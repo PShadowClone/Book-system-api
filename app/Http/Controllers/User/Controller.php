@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Library;
 use App\User;
 use App\UserEvaluations;
 use App\Request as BookRequest;
@@ -86,6 +87,37 @@ class Controller extends BaseController
             return success($evaluation);
         } catch (\Exception $exception) {
             return error(trans('lang.user_evaluation_error'));
+        }
+    }
+
+    /**
+     *
+     * update user's token
+     *
+     * @if user instanceof LIBRARY
+     *      LIBRARY's token will be updated for library
+     * @else
+     *      update user's token
+     *
+     * @param Request $request
+     * @return $this
+     */
+    public function updateToken(Request $request)
+    {
+        $user = Auth::user();
+        if ($request->input('provider') == 'LIBRARY') {
+            $user = Library::find(Auth::user()->id);
+        }
+        $validator = Validator::make($request->all(), ['token' => 'required'], ['token.required' => trans('lang.token_required')]);
+        if ($validator->fails()) {
+            return error($validator->errors());
+        }
+        try {
+            $user->token = $request->input('token');
+            $user->update();
+            return success(trans('lang.token_updated_successfully'));
+        } catch (\Exception $exception) {
+            return error(trans('lang.token_updated_error'));
         }
     }
 

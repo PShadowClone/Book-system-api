@@ -46,6 +46,7 @@ define('REQUEST_IDENTIFIER_LENGTH', 10);
 define('ADD_THEN_CONTINUE', 2);
 define('REQUEST_DONE', 1);
 define('NOT_SENT_TO_CONFIRMED', NULL);
+define('MAX_DELAY_TIME', 30);
 
 /**
  *
@@ -113,6 +114,17 @@ define('DEFAULT_DRIVER_PROFITS_PAGINATION_NUMBER', 5);
  */
 define('IN_CITY', TRUE);
 define('OUT_CITY', FALSE);
+
+
+/**
+ *
+ * Notification types
+ *
+ */
+define('DELIVERY_NOTIFICATION', 101);
+
+
+define('PAYMENTS_DIR', 'payments');
 
 
 

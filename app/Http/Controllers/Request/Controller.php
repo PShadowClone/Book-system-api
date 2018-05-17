@@ -29,7 +29,7 @@ class Controller extends BaseController
     public function store(Request $request)
     {
 
-        $validations = Validator::make($request->all(), $this->rules($request->input('type')), $this->messages($request->input('type')));
+        $validations = Validator::make($request->all(), $this->rules($request->input('type')), $this->messages());
         if ($validations->fails()) {
             return error($validations->errors());
         }
@@ -125,6 +125,28 @@ class Controller extends BaseController
     }
 
 
+    public function updateRequestStatus(Request $request, $requestId = null)
+    {
+        $validations = Validator::make($request->all(), $this->requestRules(), $this->requestMessages());
+        if ($validations->fails())
+            return error($validations->errors());
+        $bookRequest = BookRequest::find($requestId);
+        if (!$bookRequest)
+            return error(trans('lang.request_not_found'));
+        $status = $request->input('status');
+        $bookRequest->status = $status;
+        if ($status == '2') {
+            $bookRequest->confirming_date = Carbon::now();
+        }
+        try {
+            $bookRequest = $bookRequest->update();
+            return success(trans('lang.request_status_successfully_updated'));
+        } catch (\Exception $exception) {
+            return error(trans('lang.request_status_changed_error'));
+        }
+    }
+
+
     /**
      *
      * get nearest driver to assign request to him
@@ -148,6 +170,39 @@ class Controller extends BaseController
         }
 
     }
+
+
+    /**
+     *
+     * validation's rules for updateRequestStatus()
+     *
+     *
+     * @return array
+     */
+    private function requestRules()
+    {
+        return [
+            'status' => 'required|in:1,2,3,4,5,6,7,8,9'
+        ];
+    }
+
+    /**
+     *
+     * validation's message for updateRequestStatus()
+     *
+     *
+     *
+     * @return array
+     */
+    private function requestMessages()
+    {
+        return [
+            'status.required' => trans('lang.status_required'),
+            'status.in' => trans('lang.status_in')
+
+        ];
+    }
+
 
     /**
      * validation rules
