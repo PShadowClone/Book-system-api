@@ -80,6 +80,9 @@ class Controller extends BaseController
     {
         $validator = Validator::make($request->all(), [
             'books' => 'required|mimes:csv,xlsx,xls',
+        ], [
+            'books.required' => trans('lang.books_required'),
+            'books.mimes' => trans('lang.books_mimes')
         ]);
 
         if ($validator->fails()) {
@@ -206,6 +209,15 @@ class Controller extends BaseController
     }
 
 
+    /**
+     *
+     * show all book evaluations
+     *
+     *
+     * @param Request $request
+     * @param null $id
+     * @return $this
+     */
     public function showEvaluations(Request $request, $id = null)
     {
         try {

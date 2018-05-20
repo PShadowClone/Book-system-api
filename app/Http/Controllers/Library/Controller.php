@@ -176,6 +176,12 @@ class Controller extends BaseController
     }
 
 
+    /**
+     *
+     * validation's rules
+     *
+     * @return array
+     */
     private function rules()
     {
         return [
@@ -183,6 +189,12 @@ class Controller extends BaseController
         ];
     }
 
+    /**
+     *
+     * validation's messages
+     *
+     * @return array
+     */
     private function messages()
     {
         return [

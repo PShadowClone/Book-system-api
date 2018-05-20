@@ -27,7 +27,8 @@ class RegisterController extends Controller
             $user->fill($request->all());
             $user->type = CLIENT;
             $user->save();
-            return success("saved successfully");
+            unset($user->password); // hide user's password from the returned response
+            return success($user);
         } catch (\Exception $exception) {
             return error(trans('created_error'));
         }

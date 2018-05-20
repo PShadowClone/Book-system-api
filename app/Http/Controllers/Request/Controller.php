@@ -37,7 +37,7 @@ class Controller extends BaseController
 
             $book = Book::find($request->input('book_id'));
             $request['library_id'] = $book->library_id;
-            $request['status'] = $request->input('type') == REQUEST_DONE ? FOR_CONFIRMING : NOT_SENT_TO_CONFIRMED; // set status of request FOR_CONFIRMING means it's need to be confirmed from library
+            $request['status'] = $request->input('type') == strval(REQUEST_DONE) ? FOR_CONFIRMING : NOT_SENT_TO_CONFIRMED; // set status of request FOR_CONFIRMING means it's need to be confirmed from library
             $request['client_id'] = Auth::user()->id; // set client id
             $request['request_identifier'] = str_random(REQUEST_IDENTIFIER_LENGTH);
             $bookRequest = BookRequest::create($request->all());
@@ -54,6 +54,69 @@ class Controller extends BaseController
             return error(trans('lang.request_store_error'));
         }
 
+    }
+
+    /**
+     *
+     * update client's request according to book's id
+     *
+     *
+     * @param Request $request
+     * @param null $book_id
+     * @return $this
+     */
+    public function update(Request $request, $book_id = null)
+    {
+        $bookCart = Cart::where(['book_id' => $book_id, 'client_id' => Auth::user()->id])->first();
+        if (!$bookCart)
+            return error(trans('lang.requested_book_not_found'));
+        $bookRequest = $bookCart->request()->first();
+        if (!$bookRequest)
+            return error(trans('request_not_found'));
+        $validations = Validator::make($request->all(), $this->updateRules(), $this->messages());
+        if ($validations->fails()) {
+            return error($validations->errors());
+        }
+        try {
+            $bookRequest->fill($request->all());
+            $bookRequest->update();
+            return success(trans('lang.update_request_successfully'));
+        } catch (\Exception $exception) {
+            return error(trans('lang.update_request_error'));
+        }
+    }
+
+    /**
+     *
+     * delete client's cart request according to the given book's id
+     *
+     *
+     * @param Request $request
+     * @param null $book_id
+     * @return $this
+     */
+    public function delete(Request $request, $book_id = null)
+    {
+        $bookCart = Cart::where(['client_id' => Auth::user()->id]);
+        if ($book_id) {
+            $bookCart = $bookCart->where(['book_id' => $book_id]);
+        }
+        if ($library_id = $request->input('library_id')) {
+            $bookCart = $bookCart->where(['library_id' => $library_id]);
+        }
+        $bookCart = $bookCart->first();
+        if (!$bookCart)
+            return error(trans('lang.requested_book_not_found'));
+        $bookRequest = $bookCart->request()->first();
+        if (!$bookRequest)
+            return error(trans('request_not_found'));
+        try {
+            $bookCart->delete();
+            $bookRequest->delete();
+            return success(trans('lang.request_deleted_successfully'));
+        } catch (\Exception $exception) {
+            return error(trans('lang.request_deleted_error'));
+        }
     }
 
     /**
@@ -125,6 +188,15 @@ class Controller extends BaseController
     }
 
 
+    /**
+     *
+     * this function handel the operations of update all requests status
+     *
+     *
+     * @param Request $request
+     * @param null $requestId
+     * @return $this
+     */
     public function updateRequestStatus(Request $request, $requestId = null)
     {
         $validations = Validator::make($request->all(), $this->requestRules(), $this->requestMessages());
@@ -168,6 +240,27 @@ class Controller extends BaseController
         } catch (\Exception $exception) {
             throw new \Exception(trans('lang.nearest_driver_error'));
         }
+
+    }
+
+
+    /**
+     *
+     * validation's rules for updating function
+     *
+     * @return array
+     */
+    private function updateRules()
+    {
+        $rules = [
+            'book_id' => 'required|exists:books,id',
+            'book_amount' => 'required|numeric',
+        ];
+        $rules['longitude'] = 'required|numeric';
+        $rules['latitude'] = 'required|numeric';
+        $rules['quarter_id'] = 'required|exists:quarters,id';
+        return $rules;
+
 
     }
 

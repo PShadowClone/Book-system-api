@@ -24,60 +24,60 @@ class Controller extends BaseController
     private $cartPrice = 0;
     private $totalPrice = 0;
 
+    /**
+     *
+     * *********************************************
+     *             Show all request
+     * *********************************************
+     *
+     * this function is considard as interface function that
+     * handles the complicated offer operations
+     *
+     *
+     * @return $this
+     */
     public function show()
     {
         try {
-
-//            dd($this->checkOffers());
-
-//            $result = DB::select('SELECT books.* FROM cart
-//                                INNER JOIN books ON cart.book_id = books.id
-//                                INNER JOIN libraries ON libraries.id = books.library_id
-//                                GROUP BY cart.library_id');
-
-//            dd($result);
-//            $books = collect();
-//            $cart = Cart::with(['library', 'book'])->where(['client_id' => Auth::user()->id])->get()->map(function ($item, $books) {
-//                $item->library()->get()->map(function ($library) use ($item, $books) {
-//                    $library['book'] = array();
-////                    $item->book()->get()->map(function ($book) use ($item, $library, $books) {
-////                        if ($library->id == $book->library_id) {
-////                            array_push($library['book'], $book);
-////                        }
-////                        return $book;
-////                    });
-//                    $books->push($library);
-//                    return $library;
-//                });
-//                return $item;
-
-//            });
-            $cartLibraryIds = Cart::where('client_id', '=', Auth::user()->id)->distinct()->pluck('library_id')->toArray();
-
-//            dd($cartLibraryIds);
 
             $offer = $this->getOffer();
             $books = $this->getBooks();
             if ($offer) {
                 $result = $this->checkMajorOfferType($offer, $books);
-                $result = $this->drawReturnedResult($result);
-//                dd($result);
+                if ($offer->type == BOOK_OFFER)
+                    $result = $this->drawReturnedResult($result);
+            } else {
+                $result = $result = $this->drawReturnedResult($books);
             }
             return success($result);
         } catch (\Exception $exception) {
-            dd($exception->getMessage());
             return error('lang.cart_show_error');
         }
     }
 
+    /**
+     *
+     * get cart's libraries
+     *
+     *
+     * @return array
+     */
     private function getLibraries()
     {
-        return Cart::join('libraries', 'libraries.id', '=', 'cart.library_id')
-            ->select(['libraries.*'])
-            ->distinct()
-            ->get();
+        $resultAsArray = [];
+        $result = DB::select('SELECT libraries.* FROM cart JOIN libraries ON cart.library_id = libraries.id WHERE client_id = ' . Auth::user()->id . ' GROUP BY cart.library_id');
+        foreach ($result as $item) {
+            $item = (array)$item;
+            array_push($resultAsArray, $item);
+        }
+        return $resultAsArray;
     }
 
+    /**
+     * get all cart's books
+     *
+     * @return $this
+     */
     private function getBooks()
     {
         return Cart::join('books', 'books.id', '=', 'cart.book_id')
@@ -85,19 +85,58 @@ class Controller extends BaseController
             ->distinct();
     }
 
+    /**
+     *
+     * *********************************************
+     *             AVAILABLE OFFER
+     * *********************************************
+     *
+     * this function returned the (last) available offers
+     *
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null|static
+     */
     private function getOffer()
     {
         return Offer::whereDate('start_date', '<=', Carbon::now())->whereDate('expire_date', '>=', Carbon::now())->orderBy('id', 'desc')->first();
     }
 
+    /**
+     * *********************************************
+     *             MAJOR_CHECKER OFFER
+     * *********************************************
+     *
+     *  this function checks the type off the available offer
+     * @IF offer.type == BOOK_OFFER
+     * @then
+     *  call checkBOOK_OFFER()
+     * @else
+     *  call checkBUY_OFFER()
+     *
+     * @param Offer $offer
+     * @param $books
+     * @return Controller|\Illuminate\Support\Collection|mixed
+     */
     private function checkMajorOfferType(Offer $offer, $books)
     {
         if ($offer->type == BOOK_OFFER) {
             return $this->checkBOOK_OFFER($offer, $books);
         }
-        return null;
+        return $this->checkBUY_OFFER($offer, $books);
     }
 
+    /**
+     *
+     * *********************************************
+     *             AVAILABLE OFFER
+     * *********************************************
+     *
+     *  this function handles all operations BOOK_OFFER's operations as (function interface)
+     *
+     * @param Offer $offer
+     * @param $books
+     * @return mixed
+     */
     private function checkBOOK_OFFER(Offer $offer, $books)
     {
         if ($offer->book_offer_type == FREE_DELIVERING) {
@@ -107,6 +146,19 @@ class Controller extends BaseController
 
     }
 
+    /**
+     *
+     * *********************************************
+     *             FREE_DELIVERING OFFER
+     * *********************************************
+     *
+     * @if offer.type == BOOK_OFFER @and offer.book_offer_type == FREE_DELIVERING
+     * @then this function that adopts all required offer operations will be fired
+     *
+     * @param Offer $offer
+     * @param $books
+     * @return mixed
+     */
     private function checkFREE_DELIVERING(Offer $offer, $books)
     {
         $book_ids = $books->pluck('id');
@@ -128,6 +180,19 @@ class Controller extends BaseController
         return $books;
     }
 
+    /**
+     *
+     * *********************************************
+     *             DELIVERING_PRICE
+     * *********************************************
+     *
+     * this function returns delivering price according to
+     * the details of delivering, that user has submitted before
+     *
+     *
+     * @param $book
+     * @return mixed
+     */
     private function getBookDeliveryPrice($book)
     {
         $library = $book->library()->first();
@@ -146,6 +211,18 @@ class Controller extends BaseController
     }
 
 
+    /**
+     *
+     * *********************************************
+     *              PRICE_DISCOUNT Operations
+     * *********************************************
+     * this function calculates the price discount that should be offered
+     * when there is an PRICE_DISCOUNT offer
+     *
+     * @param $offer
+     * @param $books
+     * @return mixed
+     */
     private function checkPRICE_DISCOUNT($offer, $books)
     {
         return $books->get()->map(function ($item) use ($offer) {
@@ -159,6 +236,16 @@ class Controller extends BaseController
         });
     }
 
+    /**
+     *
+     * @if Offer.type == BOOK_DISCOUNT @and Offer.book_offer_type == FREE_DELIVERING
+     * @then
+     *  function will be fired
+     *
+     * @param $offer
+     * @param $book
+     * @return float|int
+     */
     private function calculateBookDiscount($offer, $book)
     {
         return $book->price - (($book->price * $offer->book_discount_rate) / 100);
@@ -176,20 +263,76 @@ class Controller extends BaseController
     }
 
 
-    private function checkBUY_OFFER($offer, $books)
+    /**
+     *
+     * *********************************************
+     *              BUY_OFFER Operations
+     * *********************************************
+     *  this function handles the operations that must be done when
+     * offer.type == BUY_OFFER
+     *
+     * @if Offer.type == BUY_OFFER
+     * @if offer.buy_offer_type == SINGLE_LIBRARY  @then
+     *  the discount will be happened for single library but function makes usre that all required books
+     *  have lied in the same book spot (same library)
+     *
+     * @else
+     *  the discount will be happened for all required libraries
+     *
+     * @param Offer $offer
+     * @param $books
+     * @return Controller|\Illuminate\Support\Collection
+     */
+    private function checkBUY_OFFER(Offer $offer, $books)
     {
         $totalBooksPrice = $books->sum('price');
-        if ($offer->buy_offer_type == ALL_LIBRARY_BOOKS)
-            if ($totalBooksPrice >= $offer->more_than) {
-                $this->totalPrice = $this->calculateTotalPriceDiscount($offer, $totalBooksPrice);
+        $numberOfCartLibraries = Library::hydrate($this->getLibraries())->count();
+        if ($offer->buy_offer_type == SINGLE_LIBRARY && $numberOfCartLibraries == 1 && $totalBooksPrice >= $offer->more_than) {
+            $returnedResult = $this->drawReturnedResult($books->get());
+            $firstObject = $returnedResult->first();
+            if ($firstObject) {
+                $firstObject['offered_price'] = $this->calculateTotalPriceDiscount($offer, $totalBooksPrice);
             }
+
+            return $returnedResult;
+        }
+        $returnedResult = $this->drawReturnedResult($books->get());
+        $returnedResult->map(function ($item) use ($offer, $totalBooksPrice) {
+            if ($item) {
+                $item['offered_price'] = $this->calculateTotalPriceDiscount($offer, $totalBooksPrice);
+            }
+        });
+
+        return $returnedResult;
     }
 
+    /**
+     *
+     * calculate the result of price after discounting
+     *
+     *
+     * @param $offer
+     * @param $total_book_price
+     * @return float|int
+     */
     private function calculateTotalPriceDiscount($offer, $total_book_price)
     {
         return $total_book_price - (($total_book_price * $offer->buy_discount_rate) / 100);
     }
 
+    /**
+     *
+     * *********************************************
+     *              Returned json
+     * *********************************************
+     *
+     * this function shapes the returned json to make sure that is in appropriate shope
+     *
+     *
+     * @param $books
+     * @return \Illuminate\Support\Collection|static
+     *
+     */
     private function drawReturnedResult($books)
     {
         $books = Book::hydrate($books->toArray());
@@ -208,77 +351,6 @@ class Controller extends BaseController
     }
 
     /**
-     * private function checkOffers()
-     * {
-     * //        $offeredBooks = BookOffer::getOfferedBooks();
-     * //        return $offeredBooks;
-     * //        dd($offeredBooks);
-     * $availableOffers = Offer::whereDate('start_date', '<=', Carbon::now())->whereDate('expire_date', '>=', Carbon::now())->first();
-     * if ($availableOffers->type == BUY_OFFER) {
-     *
-     * } else {
-     * if ($availableOffers->book_offer_type == PRICE_DISCOUNT) {
-     * $resultOfDiscount = $this->getOfferDiscount($availableOffers->id);
-     * dd($resultOfDiscount);
-     * $totalBookPrice = $this->coreOfOfferSearch($availableOffers->id)->sum('books.price');
-     * if ($resultOfDiscount->count() == $availableOffers->from_book && $totalBookPrice > $availableOffers->book_more_than) {
-     * dd('GOT It');
-     *
-     * } else {
-     * dd('ERROR');
-     *
-     * }
-     * }
-     *
-     * //            dd($result);
-     * }
-     * $offeredOnLibrary = $availableOffers->library()->first();
-     * //        if ($availableOffers == BOOK_OFFER) {
-     * //
-     * //        } else {
-     * //
-     * //        }
-     * //
-     * //        if ($offeredOnLibrary && ($offeredOnLibrary->id == $request->library_id)) {
-     * //            if ($offeredOnLibrary->all_book == 1) {
-     * ////                return $availableOffers->
-     * //            }
-     * //        }
-     * //
-     * //        if ($availableOffers->type == FREE_DELIVERING) {
-     * //            $offeredBook = $availableOffers->offeredBooks()->get();
-     * //        }
-     * //        $library = $request->library()->first();
-     * //
-     * //        dd($availableOffers);
-     * }
-     *
-     * private function freeDelivering(Book $book)
-     * {
-     * $offer_book = BookOffer::join('books', 'books.id', '=', 'book_offers.book_id')
-     * ->join('offers', 'offers.id', '=', 'book_offers.offer_id')
-     * ->where(['books.id' => $book->id])
-     * ->orderBy('book_offers.created_at', 'desc')
-     * ->select(['books.*', 'offers.*'])
-     * ->first();
-     * $offer = Offer::hydrate($offer_book);
-     * $book = Book::hydrate($offer_book);
-     * }
-     *
-     * private function getDeliveryPrice(BookRequest $request)
-     * {
-     * $library = $request->library()->first();
-     * if (!$library)
-     * $delivery_price = delivery_price(FALSE);
-     * else
-     * $delivery_price = delivery_price($library->quarter_id == $request->quarter_id);
-     * $delivery_price = $this->getPromoCodeDiscount($request, $delivery_price);
-     * return $delivery_price;
-     *
-     *
-     * }
-     *
-     * /**
      *
      * get the discount of promo code
      *
@@ -295,51 +367,5 @@ class Controller extends BaseController
         return $delivery_price;
     }
 
-    /**
-     * private function saleFromSingleLibrary()
-     * {
-     *
-     * }
-     *
-     * private function getOfferDiscount($offer_id)
-     * {
-     * $result = $this->coreOfOfferSearch($offer_id);
-     * return $result->get();
-     * }
-     *
-     * private function coreOfOfferSearch($offer_id)
-     * {
-     * return DB::table('offers')
-     * ->join('book_offers', 'book_offers.offer_id', '=', 'offers.id')
-     * ->join('books', 'books.id', '=', 'book_offers.book_id')
-     * ->join('cart', 'cart.book_id', '=', 'book_offers.book_id')
-     * ->join('libraries', 'libraries.id', '=', 'books.library_id')
-     * ->where('cart.client_id', '=', Auth::user()->id)
-     * ->where('offers.id', '=', $offer_id)
-     * //            ->havingRaw('offers.id > 0')
-     * ->select('books.*' ,DB::raw('IF(offers.book_offer_type = '.PRICE_DISCOUNT.' , 0 , 100) as delivery_price'))
-     * ->distinct();
-     *
-     * //        IF(offers.book_offer_type = '.PRICE_DISCOUNT.', ?, 100 ) as price', ["1"]
-     * }
-     *
-     * private function getCartOfferLibrary($offer_id)
-     * {
-     * return DB::table('offers')
-     * ->join('book_offers', 'book_offers.offer_id', '=', 'offers.id')
-     * ->join('books', 'books.id', '=', 'book_offers.book_id')
-     * ->join('cart', 'cart.book_id', '=', 'book_offers.book_id')
-     * ->join('libraries', 'libraries.id', '=', 'books.library_id')
-     * ->where('cart.client_id', '=', Auth::user()->id)
-     * ->where('offers.id', '=', $offer_id)
-     * ->select(['libraries.*'])
-     * ->distinct();
-     * }
-     *
-     * private function drawRequiredShap()
-     * {
-     *
-     * }
-     * **/
 
 }

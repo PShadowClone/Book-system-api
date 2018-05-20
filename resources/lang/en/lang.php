@@ -6,6 +6,8 @@ return [
     'request_status_successfully_updated' => 'تم تحديث حالة الطلب بنجاح',
     'delivery_order' => 'عرض توصيل جديد',
     'new_delivery_order' => 'هناك عرض توصيل جديد قريب منك',
+    'update_request_successfully' => 'تم تحديث بيانات الطلب بنجاح',
+    'request_deleted_successfully' => 'تم حذف الطلب من السلة بنجاح',
 
     'not_authorized_access' => '401',
     'name_required' => "1",
@@ -165,7 +167,14 @@ return [
     'image_uploaded_error' => '75',
     'image_required' => '76',
     'request_id_required' => '77',
-    'request_id_exists' => '78'
+    'request_id_exists' => '78',
+    'requested_book_not_found' => '79',
+    'update_request_error' => '80',
+    'request_deleted_error' => '81',
+    'books_required' => '82',
+    'books_mimes' => '83',
+    'offer_no_found' => '84',
+    'show_driver_profits_error' => '85'
 
 
 ];

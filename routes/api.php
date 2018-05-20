@@ -47,6 +47,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::put('/user/token', 'User\Controller@updateToken');
     Route::post('/cart/sale', 'Sale\Controller@sale');
     Route::post('/payment', 'Payment\Controller@store');
+    Route::match(['post', 'put', 'patch'], '/request/{book_id?}', 'Request\Controller@update');
+    Route::delete('/request/{book_id?}', 'Request\Controller@delete');
 
 
 });

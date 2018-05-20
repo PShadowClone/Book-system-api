@@ -73,6 +73,8 @@ define('ALL_LIBRARY_BOOKS', "1");
 define('NOT_ALL_LIBRARY_BOOKS', "2");
 define('BOOK_OFFER', "1");
 define('BUY_OFFER', "2");
+define('SINGLE_LIBRARY', "1");
+define('ALL_PURCHASES', "2");
 
 
 /**

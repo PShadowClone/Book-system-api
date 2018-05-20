@@ -25,6 +25,8 @@ class Controller extends BaseController
             $bookRequests = BookRequests::where(['driver_id' => Auth::user()->id]);
             if ($request_id) {
                 $bookRequests = $bookRequests->with(['client', 'book', 'library'])->where(['id' => $request_id])->first();
+                if (!$bookRequests)
+                    return error(trans('lang.request_not_found'));
                 if ($bookRequests->book)
                     $bookRequests->book['image'] = env('ASSETS_URL') . $bookRequests->book->image;
                 return success($bookRequests);

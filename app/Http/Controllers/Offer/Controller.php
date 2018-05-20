@@ -25,6 +25,8 @@ class Controller extends BaseController
         try {
             if ($id) {
                 $offer = Offer::find($id);
+                if (!$offer)
+                    return error(trans('lang.offer_no_found'));
                 $offer['offeredBooks'] = $offer->offeredBooks()->get()->map(function ($item) {
                     $book = $item->book;
                     if ($book)

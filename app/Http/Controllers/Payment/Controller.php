@@ -6,6 +6,7 @@ use App\Payment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 
 class Controller extends BaseController
@@ -32,6 +33,7 @@ class Controller extends BaseController
             if ($image['status'] == SERVER_ERROR)
                 return error(trans('lang.image_uploaded_empty'));
             $payment = Payment::create(['image' => $image['data'], 'request_id' => $request->input('request_id'), 'client_id' => Auth::user()->id]);
+            $payment['image'] = URL::to('/') . $payment->image;
             return success($payment);
         } catch (\Exception $exception) {
             return error(trans('lang.image_uploaded_error'));
